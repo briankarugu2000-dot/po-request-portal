@@ -42,7 +42,36 @@
       <p>Fill in all required fields and attach the PFI. You'll receive a confirmation email once the PO has been raised.</p>
     </div>
 
-    <div class="card">
+    <!-- Recent Requests (Option 3) -->
+    <div class="recent-card" id="recent-card">
+      <div class="recent-header">
+        <h3>📁 Your recent requests</h3>
+        <button class="btn btn-ghost btn-sm" onclick="clearMyHistory()" style="font-size:11px">Clear history</button>
+      </div>
+      <div id="recent-list"><div class="recent-empty">No requests yet — your submissions will appear here.</div></div>
+    </div>
+
+    <!-- Track Request Section (Option 2) -->
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-header">
+        <div>
+          <div class="card-title">🔍 Track your request</div>
+          <div style="font-size:12px;color:var(--text-tertiary);margin-top:2px">Enter your Request ID to check the current status of your submission</div>
+        </div>
+      </div>
+      <div class="card-body" style="padding:16px 20px">
+        <div style="display:flex;gap:8px;align-items:flex-end">
+          <div class="field" style="flex:1;margin:0">
+            <label>Request ID</label>
+            <input type="text" id="track-input" placeholder="e.g. REQ-2026-047" style="font-family:'DM Mono',monospace" oninput="this.value=this.value.toUpperCase()">
+          </div>
+          <button class="btn btn-primary" onclick="trackRequest()" style="white-space:nowrap">Check status</button>
+        </div>
+        <div class="track-result" id="track-result"></div>
+      </div>
+    </div>
+
+    <div class="card" id="form-card">
       <div class="card-header">
         <div>
           <div class="card-title">Purchase Order Request</div>
@@ -157,9 +186,21 @@
           <button onclick="clearFile()" style="background:none;border:none;cursor:pointer;color:var(--accent);font-size:11px;margin-left:auto">Remove</button>
         </div>
 
-        <div class="form-footer">
+        <div class="form-footer" id="form-footer-btns">
           <button class="btn btn-ghost" onclick="resetForm()">Clear form</button>
           <button class="btn btn-primary" onclick="submitForm()">Submit request →</button>
+        </div>
+        <!-- Confirmation Screen -->
+        <div class="confirm-screen" id="confirm-screen">
+          <div class="confirm-icon">✅</div>
+          <div style="font-size:16px;font-weight:600;margin-bottom:4px">Request submitted!</div>
+          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:12px">Your Request ID is:</div>
+          <div class="confirm-id" id="confirm-id-display">—</div>
+          <div class="confirm-hint">📌 Save this ID — you'll need it if you want to track your request or raise an amendment.</div>
+          <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+            <button class="btn btn-ghost" onclick="newRequest()">Submit another request</button>
+            <button class="btn btn-primary" onclick="copyId()">📋 Copy ID</button>
+          </div>
         </div>
       </div>
     </div>
@@ -295,16 +336,111 @@
 <script>
 // ─── STATE ───────────────────────────────────────────────────────────────
 let requests = [
-  { id: 'REQ-2026-044', name: 'Eunice Amolo', dept: 'Planning', supplier: 'Jaicom Enterprises', item: 'Samsung A16 4/128', qty: '2,000 pcs', date: '2026-05-12', notes: '', status: 'Raised', po: 'PO-10042', urgent: false, submitted: '2026-05-05', amend: '—' },
-  { id: 'REQ-2026-045', name: 'Daniel Mutiso', dept: 'Planning', supplier: 'Franko Trading Enterprise', item: 'M-kopa X3 4/128', qty: '3,500 pcs', date: '2026-05-15', notes: 'Ensure colour match with batch 12', status: 'Amended', po: 'PO-10038', urgent: false, submitted: '2026-05-03', amend: 'REQ-2026-039' },
-  { id: 'REQ-2026-046', name: 'Julianna Wanjiku', dept: 'Sourcing', supplier: 'Mitsumi Nigeria Ltd', item: 'Samsung A06 4/64', qty: '1,200 cartons', date: '2026-05-19', notes: '', status: 'Raised', po: 'PO-10044', urgent: false, submitted: '2026-05-07', amend: '—' },
-  { id: 'REQ-2026-047', name: 'Annette Njoki', dept: 'Sourcing', supplier: 'Sumitomo Corporation', item: 'M-kopa M10 4/64', qty: '5,000 pcs', date: '2026-05-22', notes: 'Urgent — needed for week 21 dispatch run.', status: 'Pending', po: '—', urgent: true, submitted: '2026-05-09', amend: '—' },
+  { id: 'REQ-2026-044', name: 'Eunice Amolo', dept: 'Planning', supplier: 'Jaicom Enterprices', item: 'Samsung A16 4/128', qty: '2,000 pcs', date: '2026-05-12', notes: '', status: 'Raised', po: 'PO-10042', urgent: false, submitted: '2026-05-05', amend: '—' },
+  { id: 'REQ-2026-045', name: 'Annette Njoki', dept: 'Sourcing', supplier: 'Franko Trading Enterprice', item: 'Samsung A06 4/64', qty: '3,500 pcs', date: '2026-05-15', notes: 'Ensure colour match with batch 12', status: 'Amended', po: 'PO-10038', urgent: false, submitted: '2026-05-03', amend: 'REQ-2026-039' },
+  { id: 'REQ-2026-046', name: 'Daniel Mutiso', dept: 'Planning', supplier: 'Mitsumi Nigeria Ltd', item: 'M-kopa X3 4/128', qty: '1,200 pcs', date: '2026-05-19', notes: '', status: 'Raised', po: 'PO-10044', urgent: false, submitted: '2026-05-07', amend: '—' },
+  { id: 'REQ-2026-047', name: 'Julianna Wanjiku', dept: 'Sourcing', supplier: 'Sumitomo Corporation', item: 'M-kopa M10 4/64', qty: '5,000 pcs', date: '2026-05-22', notes: 'Urgent — needed for week 21 dispatch run.', status: 'Pending', po: '—', urgent: true, submitted: '2026-05-09', amend: '—' },
 ];
 
 let activeId = null;
 let filterStatus = 'all';
 let filterSearch = '';
 let reqCounter = 48;
+
+
+// ─── OPTION 2: TRACK REQUEST ─────────────────────────────────────────────
+function trackRequest() {
+  const input = document.getElementById('track-input').value.trim().toUpperCase();
+  const box = document.getElementById('track-result');
+  if (!input) { box.style.display='none'; return; }
+
+  const r = requests.find(x => x.id.toUpperCase() === input);
+  box.style.display = 'block';
+
+  if (!r) {
+    box.className = 'track-result notfound';
+    box.innerHTML = `<div style="color:var(--text-secondary);text-align:center">No request found for <strong>${input}</strong>. Check the ID and try again.</div>`;
+    return;
+  }
+
+  box.className = 'track-result found';
+  box.innerHTML = `
+    <div class="track-label">Request found</div>
+    <div class="track-row"><span class="track-key">Request ID</span><span class="track-val" style="font-family:'DM Mono',monospace">${r.id}</span></div>
+    <div class="track-row"><span class="track-key">Item</span><span class="track-val">${r.item}</span></div>
+    <div class="track-row"><span class="track-key">Supplier</span><span class="track-val">${r.supplier}</span></div>
+    <div class="track-row"><span class="track-key">Quantity</span><span class="track-val">${r.qty}</span></div>
+    <div class="track-row"><span class="track-key">Delivery date</span><span class="track-val">${r.date}</span></div>
+    <div class="track-row"><span class="track-key">PO number</span><span class="track-val" style="color:var(--accent);font-family:'DM Mono',monospace">${r.po}</span></div>
+    <div class="track-row"><span class="track-key">Status</span><span class="track-val">${statusBadge(r.status)}</span></div>
+    ${r.amend !== '—' ? `<div class="track-row"><span class="track-key">Amendment of</span><span class="track-val" style="font-family:'DM Mono',monospace">${r.amend}</span></div>` : ''}
+  `;
+}
+
+// ─── OPTION 3: RECENT REQUESTS (localStorage) ────────────────────────────
+function saveToHistory(req) {
+  try {
+    let history = JSON.parse(localStorage.getItem('po_my_requests') || '[]');
+    history.unshift({ id: req.id, item: req.item, date: req.date, status: req.status, submitted: req.submitted });
+    history = history.slice(0, 5); // keep last 5
+    localStorage.setItem('po_my_requests', JSON.stringify(history));
+  } catch(e) {}
+}
+
+function loadRecentRequests() {
+  try {
+    const history = JSON.parse(localStorage.getItem('po_my_requests') || '[]');
+    const container = document.getElementById('recent-list');
+    if (!history.length) return;
+
+    // Merge with live data for latest status
+    container.innerHTML = history.map(h => {
+      const live = requests.find(r => r.id === h.id);
+      const status = live ? live.status : h.status;
+      return `
+        <div class="recent-item">
+          <span class="recent-id">${h.id}</span>
+          <span class="recent-desc">${h.item}</span>
+          <span class="recent-date">${h.date}</span>
+          <span>${statusBadge(status)}</span>
+        </div>`;
+    }).join('');
+  } catch(e) {}
+}
+
+function clearMyHistory() {
+  try { localStorage.removeItem('po_my_requests'); } catch(e) {}
+  document.getElementById('recent-list').innerHTML = '<div class="recent-empty">No requests yet — your submissions will appear here.</div>';
+}
+
+// ─── CONFIRMATION SCREEN ──────────────────────────────────────────────────
+function showConfirmation(id) {
+  document.getElementById('form-footer-btns').style.display = 'none';
+  // hide all form sections except card header
+  document.querySelectorAll('.card-body .section-label, .card-body .form-row, .card-body .upload-zone, .card-body .file-attached').forEach(el => el.style.display = 'none');
+  document.getElementById('confirm-id-display').textContent = id;
+  document.getElementById('confirm-screen').style.display = 'block';
+}
+
+function newRequest() {
+  document.getElementById('confirm-screen').style.display = 'none';
+  document.getElementById('form-footer-btns').style.display = 'flex';
+  document.querySelectorAll('.card-body .section-label').forEach(el => el.style.display = 'block');
+  document.querySelectorAll('.card-body .form-row').forEach(el => el.style.display = 'grid');
+  document.getElementById('upload-zone').style.display = 'block';
+  resetForm();
+}
+
+function copyId() {
+  const id = document.getElementById('confirm-id-display').textContent;
+  try {
+    navigator.clipboard.writeText(id);
+    showToast('📋 Request ID copied!');
+  } catch(e) {
+    showToast('Select and copy the ID manually.');
+  }
+}
+
 
 // ─── SCREENS ─────────────────────────────────────────────────────────────
 function switchScreen(name, btn) {
@@ -525,6 +661,7 @@ function refreshDatalistsFromRequests() {
 // Init
 renderTable();
 refreshDatalistsFromRequests();
+loadRecentRequests();
 </script>
 </body>
 </html>

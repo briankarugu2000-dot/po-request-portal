@@ -618,6 +618,82 @@
     font-size: 13px;
   }
 
+
+  /* TRACK REQUEST */
+  .track-result {
+    display:none;
+    margin-top:12px;
+    padding:14px;
+    border-radius:var(--radius);
+    border:1px solid var(--border);
+    background:var(--surface-2);
+    font-size:13px;
+  }
+  .track-result.found { border-color:var(--accent); background:var(--accent-light); }
+  .track-result.notfound { border-color:var(--border-strong); background:var(--surface-2); }
+  .track-label { font-size:11px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px; }
+  .track-row { display:flex;justify-content:space-between;padding:4px 0;font-size:13px;border-bottom:1px solid var(--border); }
+  .track-row:last-child { border-bottom:none; }
+  .track-key { color:var(--text-secondary); }
+  .track-val { font-weight:500; }
+
+  /* RECENT REQUESTS */
+  .recent-card {
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow);
+    margin-bottom:20px;
+    overflow:hidden;
+  }
+  .recent-header {
+    padding:12px 20px;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:var(--surface-2);
+  }
+  .recent-header h3 { font-size:13px;font-weight:600; }
+  .recent-item {
+    display:grid;
+    grid-template-columns:120px 1fr 100px 80px;
+    gap:10px;
+    align-items:center;
+    padding:10px 20px;
+    border-bottom:1px solid var(--border);
+    font-size:12px;
+    transition:background .1s;
+  }
+  .recent-item:last-child { border-bottom:none; }
+  .recent-item:hover { background:var(--surface-2); }
+  .recent-id { font-family:'DM Mono',monospace;font-size:11px;color:var(--text-secondary); }
+  .recent-desc { font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+  .recent-date { color:var(--text-tertiary); }
+  .recent-empty { padding:20px;text-align:center;color:var(--text-tertiary);font-size:13px; }
+
+  /* CONFIRMATION SCREEN */
+  .confirm-screen {
+    display:none;
+    text-align:center;
+    padding:40px 24px;
+  }
+  .confirm-icon { font-size:48px;margin-bottom:16px; }
+  .confirm-id {
+    font-family:'DM Mono',monospace;
+    font-size:22px;
+    font-weight:600;
+    color:var(--accent);
+    background:var(--accent-light);
+    border:1px solid var(--accent);
+    border-radius:var(--radius);
+    padding:10px 24px;
+    display:inline-block;
+    margin:12px 0 8px;
+    letter-spacing:.04em;
+  }
+  .confirm-hint { font-size:13px;color:var(--text-secondary);margin-bottom:24px; }
+
   @media (max-width: 640px) {
     main { padding: 16px; }
     .form-row.col-2, .form-row.col-3 { grid-template-columns: 1fr; }
