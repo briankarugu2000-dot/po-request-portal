@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PO Request Portal — M-KOPA</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <div class="nav-logo">MK</div>
+    <div>
+      <div class="nav-title">PO Request Portal</div>
+      <div class="nav-subtitle">M-KOPA Kenya</div>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchScreen('form', this)">
+      📄 Request form
+    </button>
+    <button class="nav-tab" onclick="switchScreen('dash', this)">
+      📊 Planner dashboard
+    </button>
+  </div>
+  <div class="nav-right">
+    <div style="text-align:right">
+      <div style="font-size:13px;font-weight:500">Brian Karugu</div>
+      <div style="font-size:11px;color:var(--text-tertiary)">Demand & Planning Officer</div>
+    </div>
+    <div class="avatar">BK</div>
+  </div>
+</nav>
+
+<!-- REQUEST FORM -->
+<div id="screen-form" class="screen active">
+  <main>
+    <div class="page-header">
+      <h1>New PO Request</h1>
+      <p>Fill in all required fields and attach the PFI. You'll receive a confirmation email once the PO has been raised.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Purchase Order Request</div>
+          <div style="font-size:12px;color:var(--text-tertiary);margin-top:2px">All fields marked <span style="color:var(--danger)">*</span> are required</div>
+        </div>
+        <span class="req-id-badge" id="req-id-display">#REQ-2026-048</span>
+      </div>
+
+      <div class="card-body">
+        <!-- Requester -->
+        <div class="section-label">Requester details</div>
+        <div class="form-row col-2" style="margin-bottom:20px">
+          <div class="field">
+            <label>Your name <span class="required">*</span></label>
+            <input type="text" id="req-name" placeholder="e.g. Ian Mutugi" list="list-names" autocomplete="off">
+            <datalist id="list-names"></datalist>
+          </div>
+          <div class="field">
+            <label>Department <span class="required">*</span></label>
+            <select id="req-dept">
+              <option value="">Select department</option>
+              <option>Supply Chain</option>
+              <option>Finance</option>
+              <option>Swaps & Repairs</option>
+              <option>Technology</option>
+              <option>PLAK</option>
+              <option>Warehouse & Logistics</option>
+              <option>Other</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Supplier & Order -->
+        <div class="section-label">Supplier & order info</div>
+        <div class="form-row col-2">
+          <div class="field">
+            <label>Supplier name <span class="required">*</span></label>
+            <input type="text" id="req-supplier" placeholder="e.g. Jaicom Enterprises" list="list-suppliers" autocomplete="off">
+            <datalist id="list-suppliers"></datalist>
+          </div>
+          <div class="field">
+            <label>Required delivery date <span class="required">*</span></label>
+            <input type="date" id="req-date">
+          </div>
+        </div>
+        <div class="form-row col-3">
+          <div class="field">
+            <label>Item description <span class="required">*</span></label>
+            <input type="text" id="req-item" placeholder="e.g. Samsung A07 4/64" list="list-items" autocomplete="off">
+            <datalist id="list-items"></datalist>
+          </div>
+          <div class="field">
+            <label>Quantity <span class="required">*</span></label>
+            <input type="number" id="req-qty" placeholder="e.g. 5000" min="1">
+          </div>
+          <div class="field">
+            <label>Unit <span class="required">*</span></label>
+            <select id="req-unit">
+              <option value="">Select</option>
+              <option>Pcs</option>
+              <option>Ea</option>
+              <option>Ltrs</option>
+              <option>Rolls</option>
+              <option>Sets</option>
+              <option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row col-1" style="margin-bottom:20px">
+          <div class="field">
+            <label>Notes / special instructions</label>
+            <textarea id="req-notes" placeholder="Any urgency, delivery conditions, or context the planner should know..."></textarea>
+          </div>
+        </div>
+
+        <!-- Amendment -->
+        <div class="section-label">Amendment (optional)</div>
+        <div class="form-row col-2" style="margin-bottom:20px">
+          <div class="field">
+            <label>Is this an amendment?</label>
+            <label class="check-row" style="margin-top:6px">
+              <input type="checkbox" id="req-is-amendment" onchange="toggleAmendRef()">
+              Yes, this updates an existing request
+            </label>
+          </div>
+          <div class="field" id="amend-ref-field" style="display:none">
+            <label>Original Request ID <span class="required">*</span></label>
+            <input type="text" id="req-orig-id" placeholder="e.g. REQ-2026-045" style="font-family:'DM Mono',monospace">
+          </div>
+        </div>
+
+        <!-- Urgency -->
+        <div class="form-row col-1" style="margin-bottom:20px">
+          <div class="field">
+            <label class="check-row">
+              <input type="checkbox" id="req-urgent">
+              🔴 Mark as urgent
+            </label>
+          </div>
+        </div>
+
+        <!-- PFI Upload -->
+        <div class="section-label">PFI attachment</div>
+        <div class="upload-zone" id="upload-zone">
+          <input type="file" id="pfi-file" accept=".pdf,.jpg,.jpeg,.png" onchange="handleFile(this)">
+          <span class="upload-icon">📎</span>
+          <div class="upload-text">Drag your PFI here or <span>browse file</span></div>
+          <div class="upload-hint">PDF or image · max 10MB</div>
+        </div>
+        <div class="file-attached" id="file-attached">
+          ✅ <span id="file-name"></span>
+          <button onclick="clearFile()" style="background:none;border:none;cursor:pointer;color:var(--accent);font-size:11px;margin-left:auto">Remove</button>
+        </div>
+
+        <div class="form-footer">
+          <button class="btn btn-ghost" onclick="resetForm()">Clear form</button>
+          <button class="btn btn-primary" onclick="submitForm()">Submit request →</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- DASHBOARD -->
+<div id="screen-dash" class="screen">
+  <main style="max-width:1000px">
+    <div class="page-header" style="display:flex;align-items:flex-end;justify-content:space-between">
+      <div>
+        <h1>Planner Dashboard</h1>
+        <p>All PO requests — sorted by delivery date. Click any row to view details.</p>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="switchScreen('form', document.querySelectorAll('.nav-tab')[0])">+ New request</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-num" id="stat-total">0</div>
+        <div class="stat-label">Total requests</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num c-warning" id="stat-pending">0</div>
+        <div class="stat-label">Pending action</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num c-success" id="stat-raised">0</div>
+        <div class="stat-label">POs raised</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num c-info" id="stat-amended">0</div>
+        <div class="stat-label">Amendments</div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card">
+      <div class="table-toolbar">
+        <h2>All requests</h2>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div class="search-box">
+            🔍
+            <input type="text" placeholder="Search requests..." oninput="filterTable(this.value)" id="search-input">
+          </div>
+          <select onchange="filterByStatus(this.value)" style="width:auto;padding:6px 28px 6px 10px;font-size:12px;border-color:var(--border);background:var(--surface-2)">
+            <option value="all">All statuses</option>
+            <option value="Pending">Pending</option>
+            <option value="Raised">Raised</option>
+            <option value="Amended">Amended</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+        </div>
+      </div>
+      <table id="req-table">
+        <thead>
+          <tr>
+            <th>Req ID</th>
+            <th>Description</th>
+            <th>Supplier</th>
+            <th>Requester</th>
+            <th>Department</th>
+            <th>Delivery date</th>
+            <th>PO number</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+        </tbody>
+      </table>
+      <div class="table-empty" id="table-empty" style="display:none">No requests found.</div>
+    </div>
+  </main>
+</div>
+
+<!-- DETAIL PANEL -->
+<div class="detail-panel" id="detail-panel">
+  <div class="detail-header">
+    <div>
+      <div class="detail-title" id="dp-title">—</div>
+      <div class="detail-subtitle" id="dp-subtitle">—</div>
+    </div>
+    <button class="close-btn" onclick="closeDetail()">✕</button>
+  </div>
+
+  <div class="detail-section">
+    <div class="detail-section-label">Request info</div>
+    <div class="detail-row"><span class="detail-key">Request ID</span><span class="detail-val" id="dp-id">—</span></div>
+    <div class="detail-row"><span class="detail-key">Submitted</span><span class="detail-val" id="dp-submitted">—</span></div>
+    <div class="detail-row"><span class="detail-key">Requester</span><span class="detail-val" id="dp-requester">—</span></div>
+    <div class="detail-row"><span class="detail-key">Department</span><span class="detail-val" id="dp-dept">—</span></div>
+    <div class="detail-row"><span class="detail-key">Urgent</span><span class="detail-val" id="dp-urgent">—</span></div>
+  </div>
+
+  <div class="detail-section">
+    <div class="detail-section-label">Order details</div>
+    <div class="detail-row"><span class="detail-key">Supplier</span><span class="detail-val" id="dp-supplier">—</span></div>
+    <div class="detail-row"><span class="detail-key">Item</span><span class="detail-val" id="dp-item">—</span></div>
+    <div class="detail-row"><span class="detail-key">Quantity</span><span class="detail-val" id="dp-qty">—</span></div>
+    <div class="detail-row"><span class="detail-key">Delivery date</span><span class="detail-val" id="dp-date">—</span></div>
+    <div class="detail-row"><span class="detail-key">Notes</span><span class="detail-val" id="dp-notes" style="color:var(--text-secondary)">—</span></div>
+  </div>
+
+  <div class="detail-section">
+    <div class="detail-section-label">PO details</div>
+    <div class="detail-row"><span class="detail-key">PO number</span><span class="detail-val" id="dp-po">—</span></div>
+    <div class="detail-row"><span class="detail-key">Status</span><span class="detail-val" id="dp-status">—</span></div>
+    <div class="detail-row"><span class="detail-key">Amendment ref</span><span class="detail-val" id="dp-amend">—</span></div>
+  </div>
+
+  <div class="update-section">
+    <div class="section-label">Update this request</div>
+    <div class="field" style="margin-bottom:10px">
+      <label>PO number</label>
+      <input type="text" id="update-po" placeholder="Enter PO number" style="font-family:'DM Mono',monospace">
+    </div>
+    <div class="field" style="margin-bottom:14px">
+      <label>Update status</label>
+      <select id="update-status">
+        <option value="Pending">Pending</option>
+        <option value="Raised">Raised</option>
+        <option value="Amended">Amended</option>
+        <option value="Cancelled">Cancelled</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="updateRequest()">Save update</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────────────────────
+let requests = [
+  { id: 'REQ-2026-044', name: 'Eunice Amolo', dept: 'Planning', supplier: 'Jaicom Enterprises', item: 'Samsung A16 4/128', qty: '2,000 pcs', date: '2026-05-12', notes: '', status: 'Raised', po: 'PO-10042', urgent: false, submitted: '2026-05-05', amend: '—' },
+  { id: 'REQ-2026-045', name: 'Daniel Mutiso', dept: 'Planning', supplier: 'Franko Trading Enterprise', item: 'M-kopa X3 4/128', qty: '3,500 pcs', date: '2026-05-15', notes: 'Ensure colour match with batch 12', status: 'Amended', po: 'PO-10038', urgent: false, submitted: '2026-05-03', amend: 'REQ-2026-039' },
+  { id: 'REQ-2026-046', name: 'Julianna Wanjiku', dept: 'Sourcing', supplier: 'Mitsumi Nigeria Ltd', item: 'Samsung A06 4/64', qty: '1,200 cartons', date: '2026-05-19', notes: '', status: 'Raised', po: 'PO-10044', urgent: false, submitted: '2026-05-07', amend: '—' },
+  { id: 'REQ-2026-047', name: 'Annette Njoki', dept: 'Sourcing', supplier: 'Sumitomo Corporation', item: 'M-kopa M10 4/64', qty: '5,000 pcs', date: '2026-05-22', notes: 'Urgent — needed for week 21 dispatch run.', status: 'Pending', po: '—', urgent: true, submitted: '2026-05-09', amend: '—' },
+];
+
+let activeId = null;
+let filterStatus = 'all';
+let filterSearch = '';
+let reqCounter = 48;
+
+// ─── SCREENS ─────────────────────────────────────────────────────────────
+function switchScreen(name, btn) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  btn.classList.add('active');
+  closeDetail();
+  if (name === 'dash') renderTable();
+}
+
+// ─── FORM ─────────────────────────────────────────────────────────────────
+function toggleAmendRef() {
+  const cb = document.getElementById('req-is-amendment');
+  document.getElementById('amend-ref-field').style.display = cb.checked ? 'block' : 'none';
+}
+
+function handleFile(input) {
+  if (input.files.length) {
+    document.getElementById('file-name').textContent = input.files[0].name;
+    document.getElementById('file-attached').style.display = 'flex';
+  }
+}
+
+function clearFile() {
+  document.getElementById('pfi-file').value = '';
+  document.getElementById('file-attached').style.display = 'none';
+}
+
+function resetForm() {
+  document.getElementById('req-name').value = '';
+  document.getElementById('req-dept').value = '';
+  document.getElementById('req-supplier').value = '';
+  document.getElementById('req-date').value = '';
+  document.getElementById('req-item').value = '';
+  document.getElementById('req-qty').value = '';
+  document.getElementById('req-unit').value = '';
+  document.getElementById('req-notes').value = '';
+  document.getElementById('req-is-amendment').checked = false;
+  document.getElementById('req-urgent').checked = false;
+  document.getElementById('amend-ref-field').style.display = 'none';
+  clearFile();
+}
+
+function submitForm() {
+  const name = document.getElementById('req-name').value.trim();
+  const dept = document.getElementById('req-dept').value;
+  const supplier = document.getElementById('req-supplier').value.trim();
+  const date = document.getElementById('req-date').value;
+  const item = document.getElementById('req-item').value.trim();
+  const qty = document.getElementById('req-qty').value;
+  const unit = document.getElementById('req-unit').value;
+
+  if (!name || !dept || !supplier || !date || !item || !qty || !unit) {
+    showToast('⚠ Please fill all required fields.', '#92400e');
+    return;
+  }
+
+  const newReq = {
+    id: `REQ-2026-0${reqCounter}`,
+    name,
+    dept,
+    supplier,
+    item: `${item}`,
+    qty: `${Number(qty).toLocaleString()} ${unit}`,
+    date,
+    notes: document.getElementById('req-notes').value.trim() || '—',
+    status: 'Pending',
+    po: '—',
+    urgent: document.getElementById('req-urgent').checked,
+    submitted: new Date().toISOString().split('T')[0],
+    amend: document.getElementById('req-is-amendment').checked
+      ? (document.getElementById('req-orig-id').value.trim() || '—') : '—',
+  };
+
+  requests.unshift(newReq);
+  reqCounter++;
+  refreshDatalistsFromRequests();
+  document.getElementById('req-id-display').textContent = `#REQ-2026-0${reqCounter}`;
+  resetForm();
+  showToast('✅ Request submitted successfully!');
+  setTimeout(() => switchScreen('dash', document.querySelectorAll('.nav-tab')[1]), 1200);
+}
+
+// ─── DASHBOARD ────────────────────────────────────────────────────────────
+function updateStats() {
+  document.getElementById('stat-total').textContent = requests.length;
+  document.getElementById('stat-pending').textContent = requests.filter(r => r.status === 'Pending').length;
+  document.getElementById('stat-raised').textContent = requests.filter(r => r.status === 'Raised').length;
+  document.getElementById('stat-amended').textContent = requests.filter(r => r.status === 'Amended').length;
+}
+
+function statusBadge(status) {
+  const map = { Pending: 'badge-pending', Raised: 'badge-raised', Amended: 'badge-amended', Cancelled: 'badge-cancelled' };
+  return `<span class="badge ${map[status] || ''}">${status}</span>`;
+}
+
+function renderTable() {
+  updateStats();
+  let filtered = requests.filter(r => {
+    const matchStatus = filterStatus === 'all' || r.status === filterStatus;
+    const q = filterSearch.toLowerCase();
+    const matchSearch = !q || r.id.toLowerCase().includes(q) || r.name.toLowerCase().includes(q)
+      || r.supplier.toLowerCase().includes(q) || r.item.toLowerCase().includes(q);
+    return matchStatus && matchSearch;
+  });
+
+  // Sort by date ascending (pending first for same date)
+  filtered.sort((a, b) => {
+    if (a.date < b.date) return -1;
+    if (a.date > b.date) return 1;
+    if (a.status === 'Pending' && b.status !== 'Pending') return -1;
+    return 0;
+  });
+
+  const tbody = document.getElementById('table-body');
+  const empty = document.getElementById('table-empty');
+
+  if (!filtered.length) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+
+  empty.style.display = 'none';
+  tbody.innerHTML = filtered.map(r => `
+    <tr onclick="openDetail('${r.id}')">
+      <td class="td-id">${r.id}</td>
+      <td class="td-desc">${r.urgent ? '<span class="urgent-dot" title="Urgent"></span>' : ''}${r.item}</td>
+      <td class="td-meta">${r.supplier}</td>
+      <td class="td-meta">${r.name}</td>
+      <td class="td-meta">${r.dept}</td>
+      <td class="td-meta">${r.date}</td>
+      <td class="td-po">${r.po}</td>
+      <td>${statusBadge(r.status)}</td>
+    </tr>
+  `).join('');
+}
+
+function filterTable(val) {
+  filterSearch = val;
+  renderTable();
+}
+
+function filterByStatus(val) {
+  filterStatus = val;
+  renderTable();
+}
+
+// ─── DETAIL PANEL ─────────────────────────────────────────────────────────
+function openDetail(id) {
+  const r = requests.find(x => x.id === id);
+  if (!r) return;
+  activeId = id;
+
+  document.getElementById('dp-title').textContent = r.item;
+  document.getElementById('dp-subtitle').textContent = r.id + ' · submitted ' + r.submitted;
+  document.getElementById('dp-id').textContent = r.id;
+  document.getElementById('dp-submitted').textContent = r.submitted;
+  document.getElementById('dp-requester').textContent = r.name;
+  document.getElementById('dp-dept').textContent = r.dept;
+  document.getElementById('dp-urgent').textContent = r.urgent ? '🔴 Yes' : 'No';
+  document.getElementById('dp-supplier').textContent = r.supplier;
+  document.getElementById('dp-item').textContent = r.item;
+  document.getElementById('dp-qty').textContent = r.qty;
+  document.getElementById('dp-date').textContent = r.date;
+  document.getElementById('dp-notes').textContent = r.notes;
+  document.getElementById('dp-po').textContent = r.po;
+  document.getElementById('dp-status').innerHTML = statusBadge(r.status);
+  document.getElementById('dp-amend').textContent = r.amend;
+  document.getElementById('update-po').value = r.po === '—' ? '' : r.po;
+  document.getElementById('update-status').value = r.status;
+
+  document.getElementById('detail-panel').classList.add('open');
+}
+
+function closeDetail() {
+  document.getElementById('detail-panel').classList.remove('open');
+  activeId = null;
+}
+
+function updateRequest() {
+  if (!activeId) return;
+  const r = requests.find(x => x.id === activeId);
+  if (!r) return;
+  const po = document.getElementById('update-po').value.trim();
+  const status = document.getElementById('update-status').value;
+  r.po = po || '—';
+  r.status = status;
+  renderTable();
+  openDetail(activeId);
+  showToast('✅ Request updated.');
+}
+
+// ─── TOAST ────────────────────────────────────────────────────────────────
+function showToast(msg, bg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = bg || 'var(--accent)';
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 3000);
+}
+
+// ─── DATALISTS ───────────────────────────────────────────────────────────
+function populateDatalist(id, values) {
+  const dl = document.getElementById(id);
+  if (!dl) return;
+  dl.innerHTML = [...new Set(values)].filter(Boolean).sort()
+    .map(v => `<option value="${v}">`).join('');
+}
+
+function refreshDatalistsFromRequests() {
+  populateDatalist('list-names', requests.map(r => r.name));
+  populateDatalist('list-suppliers', requests.map(r => r.supplier));
+  populateDatalist('list-items', requests.map(r => r.item.replace(/<[^>]+>/g, '')));
+}
+
+// Init
+renderTable();
+refreshDatalistsFromRequests();
+</script>
+</body>
+</html>
